@@ -65,6 +65,15 @@ export default class Map extends Component<*, VisualizationProps, *> {
                 ([{ data: { cols }}]) => (_.find(cols, isLongitude) || {}).name),
             getHidden: (series, vizSettings) => vizSettings["map.type"] !== "pin"
         },
+        "map.metric_column": {
+            title: "Metric field",
+            ...metricSetting("map.metric_column"),
+            getHidden: (series, vizSettings) =>
+                vizSettings["map.type"] !== "pin" || (
+                    vizSettings["map.pin_type"] !== "heat" &&
+                    vizSettings["map.pin_type"] !== "grid"
+                )
+        },
         "map.region": {
             title: "Region map",
             widget: "select",
@@ -103,9 +112,14 @@ export default class Map extends Component<*, VisualizationProps, *> {
         "map.pin_type": {
             title: "Pin type",
             // Don't expose this in the UI for now
-            // widget: ChartSettingSelect,
+            widget: "select",
             props: {
-                options: [{ name: "Tiles", value: "tiles" }, { name: "Markers", value: "markers" }]
+                options: [
+                    { name: "Tiles", value: "tiles" },
+                    { name: "Markers", value: "markers" },
+                    { name: "Heat", value: "heat" },
+                    { name: "Grid", value: "grid" }
+                ]
             },
             getDefault: (series) => series[0].data.rows.length >= 1000 ? "tiles" : "markers",
             getHidden: (series, vizSettings) => vizSettings["map.type"] !== "pin"

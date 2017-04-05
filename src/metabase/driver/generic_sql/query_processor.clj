@@ -62,18 +62,9 @@
   (formatted [this]
     "Return an appropriate HoneySQL form for an object."))
 
-(def histogram-type? #{:type/Latitude :type/Longitude})
-(def ^:const histogram-bins 20)
-
 (defn- field->binned-field
-  [{:keys [min-value max-value]} field]
-  (log/info "====================")
-  (log/info min-value)
-  (log/info max-value)
-  (log/info field)
+  [{:keys [min-value max-value]} field histogram-bins]
   (let [bin-width (Math/floor (/ (- max-value min-value) histogram-bins))]
-    (log/info bin-width)
-    (log/info "====================")
     (-> field
         (hx// bin-width)
         hx/floor
@@ -102,7 +93,8 @@
       (cond
         (isa? special-type :type/UNIXTimestampSeconds)      (sql/unix-timestamp->timestamp (driver) field :seconds)
         (isa? special-type :type/UNIXTimestampMilliseconds) (sql/unix-timestamp->timestamp (driver) field :milliseconds)
-        (histogram-type? special-type)                      (field->binned-field original-field field)
+        (isa? special-type :type/Latitude)                  (field->binned-field original-field field 20)
+        (isa? special-type :type/Longitude)                 (field->binned-field original-field field 40)
         :else                                               field)))
 
   DateTimeField
